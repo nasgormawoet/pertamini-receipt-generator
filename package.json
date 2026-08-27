@@ -1,0 +1,13 @@
+{
+  "name": "pertamini-receipt-generator-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n \\\"SERVER,CLIENT\\\" -c \\\"blue,green\\\" \\\"npm run dev --prefix server\\\" \\\"npm run dev --prefix client\\\"",
+    "build": "npm run build --prefix client",
+    "start": "npm run build --prefix client && npm start --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
