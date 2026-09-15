@@ -1,56 +1,76 @@
-import React, { useState } from 'react';
+// client/src/components/MasterDataManagerModal.jsx
+import React, { useState, useEffect } from 'react';
+import { fetchData, addData, deleteData } from '../services/api';
 
-export default function MasterDataManagerModal({ isOpen, onClose, spbuList, operatorList, footerList = [], onReload }) {
+export default function MasterDataManagerModal({ isOpen, onClose }) {
     const [activeTab, setActiveTab] = useState('spbu'); // 'spbu' | 'operator' | 'footer'
 
-    const [spbuForm, setSpbuForm] = useState({ id: '', spbuNo: '', spbuName: '', spbuAddress: '', spbuCity: '', spbuPhone: '' });
-    const [opForm, setOpForm] = useState({ id: '', name: '', defaultShift: '1' });
-    const [footerForm, setFooterForm] = useState({ id: '', title: '', content: '' });
+    // State untuk menyimpan daftar data dari database
+    const [spbuList, setSpbuList] = useState([]);
+    const [operatorList, setOperatorList] = useState([]);
+    const [footerList, setFooterList] = useState([]);
+
+    // State untuk form input
+    const [spbuForm, setSpbuForm] = useState({ spbuNo: '', spbuName: '', spbuAddress: '', spbuCity: '' });
+    const [opForm, setOpForm] = useState({ name: '', defaultShift: '1' });
+    const [footerForm, setFooterForm] = useState({ title: '', content: '' });
+
+    // Load semua data setiap kali modal dibuka
+    useEffect(() => {
+        if (isOpen) {
+            loadAllData();
+        }
+    }, [isOpen]);
+
+    const loadAllData = async () => {
+        try {
+            setSpbuList(await fetchData('spbu') || []);
+            setOperatorList(await fetchData('operators') || []);
+            setFooterList(await fetchData('footers') || []);
+        } catch (error) {
+            console.error("Gagal memuat data master:", error);
+        }
+    };
 
     if (!isOpen) return null;
 
+    // --- HANDLERS ---
     const handleSaveSpbu = async (e) => {
         e.preventDefault();
-        await fetch('/api/spbu', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(spbuForm),
-        });
-        setSpbuForm({ id: '', spbuNo: '', spbuName: '', spbuAddress: '', spbuCity: '', spbuPhone: '' });
-        onReload();
+        await addData('spbu', spbuForm);
+        setSpbuForm({ spbuNo: '', spbuName: '', spbuAddress: '', spbuCity: '' });
+        loadAllData();
     };
 
     const handleSaveOperator = async (e) => {
         e.preventDefault();
-        await fetch('/api/operators', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(opForm),
-        });
-        setOpForm({ id: '', name: '', defaultShift: '1' });
-        onReload();
+        await addData('operators', opForm);
+        setOpForm({ name: '', defaultShift: '1' });
+        loadAllData();
     };
 
     const handleSaveFooter = async (e) => {
         e.preventDefault();
-        await fetch('/api/footers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(footerForm),
-        });
-        setFooterForm({ id: '', title: '', content: '' });
-        onReload();
+        await addData('footers', footerForm);
+        setFooterForm({ title: '', content: '' });
+        loadAllData();
     };
 
     const handleDelete = async (endpoint, id) => {
         if (!window.confirm('Hapus item ini?')) return;
-        await fetch(`/api/${endpoint}/${id}`, { method: 'DELETE' });
-        onReload();
+        try {
+            await deleteData(endpoint, id);
+            loadAllData();
+        } catch (error) {
+            alert('Gagal menghapus data.');
+        }
     };
 
+    // --- RENDER UI (Sama persis dengan desain Tailwind Anda) ---
     return (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+
                 {/* Header Tab Selector */}
                 <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
                     <div className="flex gap-4 items-center flex-wrap">
@@ -83,15 +103,14 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                 </div>
 
                 <div className="p-6 overflow-y-auto space-y-6 flex-1">
+                    {/* TAB SPBU */}
                     {activeTab === 'spbu' && (
                         <div className="space-y-6">
                             <form onSubmit={handleSaveSpbu} className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div>
                                     <label className="text-xs font-medium text-slate-600">Nomor SPBU</label>
                                     <input
-                                        type="text"
-                                        required
-                                        placeholder="34.XXXXX"
+                                        type="text" required placeholder="34.XXXXX"
                                         value={spbuForm.spbuNo}
                                         onChange={(e) => setSpbuForm({ ...spbuForm, spbuNo: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
@@ -100,9 +119,7 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                                 <div>
                                     <label className="text-xs font-medium text-slate-600">Nama Lokasi</label>
                                     <input
-                                        type="text"
-                                        required
-                                        placeholder="SPBU MT Haryono"
+                                        type="text" required placeholder="SPBU MT Haryono"
                                         value={spbuForm.spbuName}
                                         onChange={(e) => setSpbuForm({ ...spbuForm, spbuName: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
@@ -111,9 +128,7 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                                 <div>
                                     <label className="text-xs font-medium text-slate-600">Kota / Wilayah</label>
                                     <input
-                                        type="text"
-                                        required
-                                        value={spbuForm.spbuCity}
+                                        type="text" required value={spbuForm.spbuCity}
                                         onChange={(e) => setSpbuForm({ ...spbuForm, spbuCity: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
                                     />
@@ -121,9 +136,7 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                                 <div className="md:col-span-3">
                                     <label className="text-xs font-medium text-slate-600">Alamat Lengkap</label>
                                     <input
-                                        type="text"
-                                        required
-                                        value={spbuForm.spbuAddress}
+                                        type="text" required value={spbuForm.spbuAddress}
                                         onChange={(e) => setSpbuForm({ ...spbuForm, spbuAddress: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
                                     />
@@ -163,15 +176,14 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                         </div>
                     )}
 
+                    {/* TAB OPERATOR */}
                     {activeTab === 'operator' && (
                         <div className="space-y-6">
                             <form onSubmit={handleSaveOperator} className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex gap-3 items-end">
                                 <div className="flex-1">
                                     <label className="text-xs font-medium text-slate-600">Nama Petugas</label>
                                     <input
-                                        type="text"
-                                        required
-                                        placeholder="Contoh: EKO S."
+                                        type="text" required placeholder="Contoh: EKO S."
                                         value={opForm.name}
                                         onChange={(e) => setOpForm({ ...opForm, name: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
@@ -180,8 +192,7 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                                 <div className="w-32">
                                     <label className="text-xs font-medium text-slate-600">Default Shift</label>
                                     <input
-                                        type="text"
-                                        value={opForm.defaultShift}
+                                        type="text" value={opForm.defaultShift}
                                         onChange={(e) => setOpForm({ ...opForm, defaultShift: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
                                     />
@@ -214,15 +225,14 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                         </div>
                     )}
 
+                    {/* TAB FOOTER */}
                     {activeTab === 'footer' && (
                         <div className="space-y-6">
                             <form onSubmit={handleSaveFooter} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                                 <div>
                                     <label className="text-xs font-medium text-slate-600">Judul / Alias Template Footer</label>
                                     <input
-                                        type="text"
-                                        required
-                                        placeholder="Contoh: Pesan Promo BBM"
+                                        type="text" required placeholder="Contoh: Pesan Promo BBM"
                                         value={footerForm.title}
                                         onChange={(e) => setFooterForm({ ...footerForm, title: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
@@ -231,9 +241,7 @@ export default function MasterDataManagerModal({ isOpen, onClose, spbuList, oper
                                 <div>
                                     <label className="text-xs font-medium text-slate-600">Isi Teks Footer (Gunakan Enter untuk Baris Baru)</label>
                                     <textarea
-                                        rows={3}
-                                        required
-                                        placeholder="TERIMA KASIH & SELAMAT JALAN&#10;PASTIKAN DISPLAY DI ANGKA NOL"
+                                        rows={3} required placeholder="TERIMA KASIH & SELAMAT JALAN&#10;PASTIKAN DISPLAY DI ANGKA NOL"
                                         value={footerForm.content}
                                         onChange={(e) => setFooterForm({ ...footerForm, content: e.target.value })}
                                         className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white font-mono focus:outline-none"

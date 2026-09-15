@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import PrintStyles from './components/PrintStyles';
-import ReceiptForm from './components/ReceiptForm';
-import ReceiptPreview from './components/ReceiptPreview';
-import MasterDataManagerModal from './components/MasterDataManagerModal';
-import { BBM_PRESETS } from './constants/fuel';
+import PrintStyles from '../components/PrintStyles.jsx';
+import ReceiptForm from '../components/ReceiptForm.jsx';
+import ReceiptPreview from '../components/ReceiptPreview.jsx';
+import MasterDataManagerModal from '../components/MasterDataManagerModal.jsx';
+import { BBM_PRESETS } from '../constants/fuel.jsx';
 
 export default function ReceiptGenerator() {
     const [paperSize, setPaperSize] = useState('58mm');

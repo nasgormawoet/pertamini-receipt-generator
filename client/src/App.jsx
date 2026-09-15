@@ -3,8 +3,8 @@ import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import './App.css'
-import ReceiptGenerator from './ReceiptGenerator.jsx'
-import Footer from './Footer.jsx'
+import ReceiptGenerator from './pages/ReceiptGenerator.jsx'
+import Footer from './components/layouts/Footer.jsx'
 
 function App() {
   return (

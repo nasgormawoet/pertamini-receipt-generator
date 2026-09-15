@@ -141,8 +141,7 @@ export default function ReceiptForm({
                         <select
                             value={formData.fuelType}
                             onChange={(e) => onPriceOrVolumeChange('fuelType', e.target.value)}
-                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-white focus:outline-none"
-                        >
+                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-white focus:outline-none" >
                             {BBM_PRESETS.map((p) => (
                                 <option key={p.name} value={p.name}>{p.name}</option>
                             ))}
