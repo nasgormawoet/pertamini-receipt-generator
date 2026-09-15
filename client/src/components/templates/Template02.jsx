@@ -1,5 +1,5 @@
 import React from 'react';
-import { BBM_PRESETS } from '../../constants/fuel';
+import { BBM_PRESETS } from '../../constants/fuel.js';
 
 export default function Template02({ formData, paperSize }) {
     const is80 = paperSize === '80mm';

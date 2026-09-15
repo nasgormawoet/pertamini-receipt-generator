@@ -1,5 +1,5 @@
 import React from 'react';
-import { BBM_PRESETS } from '../constants/fuel';
+import { BBM_PRESETS } from '../constants/fuel.js';
 
 export default function ReceiptForm({
                                         formData,
@@ -40,7 +40,7 @@ export default function ReceiptForm({
 
     const handleSelectFooter = (e) => {
         const footerId = e.target.value;
-        const target = footerList.find((f) => f.id === footerId);
+        const target = footerList?.find((f) => String(f.id) === footerId);
         if (target) {
             setFormData((prev) => ({ ...prev, thanksText: target.content }));
         }

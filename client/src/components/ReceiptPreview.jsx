@@ -19,7 +19,7 @@ const TEMPLATE_MAP = {
     T8: Template08,
 };
 
-export default function ReceiptPreview({ formData, paperSize, activeTemplate = 'classic' }) {
+export default function ReceiptPreview({ formData, paperSize, activeTemplate }) {
     const is80 = paperSize === '80mm';
     const SelectedComponent = TEMPLATE_MAP[activeTemplate] || Template01;
 

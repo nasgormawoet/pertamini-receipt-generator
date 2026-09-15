@@ -3,8 +3,28 @@ import PrintStyles from '../components/PrintStyles.jsx';
 import ReceiptForm from '../components/ReceiptForm.jsx';
 import ReceiptPreview from '../components/ReceiptPreview.jsx';
 import MasterDataManagerModal from '../components/MasterDataManagerModal.jsx';
-import { BBM_PRESETS } from '../constants/fuel.jsx';
-import { fetchData } from '../services/api.js'; // Memanggil jembatan API yang sudah kita buat
+import { BBM_PRESETS } from '../constants/fuel.js';
+import { fetchData } from '../services/api.js';
+
+const getAutoDateTime = () => {
+    const now = new Date();
+    const pad = (num) => num.toString().padStart(2, '0'); // Menambah angka 0 di depan jika di bawah 10
+
+    const date = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    return `${date} ${time}`;
+};
+
+const getAutoTrxId = () => {
+    const now = new Date();
+    const pad = (num) => num.toString().padStart(2, '0');
+    const yyyymmdd = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+
+    const randomNum = Math.floor(1000 + Math.random() * 9000); // Menghasilkan angka acak 1000 - 9999
+
+    return `TRX-${yyyymmdd}-${randomNum}`;
+}
 
 export default function ReceiptGenerator() {
     const [paperSize, setPaperSize] = useState('58mm');
@@ -21,8 +41,8 @@ export default function ReceiptGenerator() {
         spbuAddress: '',
         spbuCity: '',
         spbuPhone: '',
-        trxId: 'TRX-20260827-0102',
-        dateTime: '27/08/2026 08:35:10',
+        trxId: getAutoTrxId(),
+        dateTime: getAutoDateTime(),
         shift: '1',
         pompaNo: '01',
         operator: '',
@@ -103,6 +123,19 @@ export default function ReceiptGenerator() {
             }));
         }
     };
+    const handleReset = () => {
+        if (window.confirm('Bersihkan form untuk transaksi baru?')) {
+            setFormData((prev) => ({
+                ...prev,
+                trxId: getAutoTrxId(),
+                dateTime: getAutoDateTime(),
+                volume: 0,
+                total: 0,
+                cashGiven: 0,
+                platNo: '',
+            }));
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
@@ -121,6 +154,13 @@ export default function ReceiptGenerator() {
                             className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg text-sm transition"
                         >
                             Kelola Master Data
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleReset}
+                            className="px-4 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg text-sm transition"
+                        >
+                            Reset Form
                         </button>
                         <button
                             type="button"
