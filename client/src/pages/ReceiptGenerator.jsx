@@ -4,10 +4,11 @@ import ReceiptForm from '../components/ReceiptForm.jsx';
 import ReceiptPreview from '../components/ReceiptPreview.jsx';
 import MasterDataManagerModal from '../components/MasterDataManagerModal.jsx';
 import { BBM_PRESETS } from '../constants/fuel.jsx';
+import { fetchData } from '../services/api.js'; // Memanggil jembatan API yang sudah kita buat
 
 export default function ReceiptGenerator() {
     const [paperSize, setPaperSize] = useState('58mm');
-    const [activeTemplate, setActiveTemplate] = useState('classic');
+    const [activeTemplate, setActiveTemplate] = useState('T1');
     const [isManagerOpen, setIsManagerOpen] = useState(false);
 
     const [spbuList, setSpbuList] = useState([]);
@@ -37,19 +38,16 @@ export default function ReceiptGenerator() {
 
     const loadMasterData = async () => {
         try {
-            const [resSpbu, resOp, resFooter] = await Promise.all([
-                fetch('/api/spbu'),
-                fetch('/api/operators'),
-                fetch('/api/footers'),
-            ]);
-            const dataSpbu = await resSpbu.json();
-            const dataOp = await resOp.json();
-            const dataFooter = await resFooter.json();
+            // Menggunakan fetchData dari Axios agar format data dan URL tepat
+            const dataSpbu = (await fetchData('spbu')) || [];
+            const dataOp = (await fetchData('operators')) || [];
+            const dataFooter = (await fetchData('footers')) || [];
 
             setSpbuList(dataSpbu);
             setOperatorList(dataOp);
             setFooterList(dataFooter);
 
+            // Setel nilai default di form jika data tersedia di database
             if (dataSpbu.length > 0 && !formData.spbuNo) {
                 setFormData((prev) => ({
                     ...prev,
@@ -134,27 +132,14 @@ export default function ReceiptGenerator() {
                     </div>
                 </header>
 
-                {/* Switcher Ukuran Kertas & Desain Nota */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 no-print">
                     <div>
                         <label className="text-xs font-medium text-slate-600 mb-2 block no-print">Ukuran Kertas Thermal</label>
                         <div className="grid grid-cols-2 gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setPaperSize('58mm')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    paperSize === '58mm' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700'
-                                }`}
-                            >
+                            <button type="button" onClick={() => setPaperSize('58mm')} className={`py-2 px-3 text-xs font-semibold rounded-md border ${paperSize === '58mm' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700'}`}>
                                 58 mm (Standar)
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => setPaperSize('80mm')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    paperSize === '80mm' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700'
-                                }`}
-                            >
+                            <button type="button" onClick={() => setPaperSize('80mm')} className={`py-2 px-3 text-xs font-semibold rounded-md border ${paperSize === '80mm' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700'}`}>
                                 80 mm (Lebar)
                             </button>
                         </div>
@@ -163,85 +148,23 @@ export default function ReceiptGenerator() {
                     <div>
                         <label className="text-xs font-medium text-slate-600 mb-2 block no-print">Model Desain Nota</label>
                         <div className="grid grid-cols-4 gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T1')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T1' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 1
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T2')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T2' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 2
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T3')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T3' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 3
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T4')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T4' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 4
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T5')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T5' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 5
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T6')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T6' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 6
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T7')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T7' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 7
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveTemplate('T8')}
-                                className={`py-2 px-3 text-xs font-semibold rounded-md border ${
-                                    activeTemplate === 'T8' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'
-                                }`}
-                            >
-                                Template 8
-                            </button>
+                            {['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'].map((template) => (
+                                <button
+                                    key={template}
+                                    type="button"
+                                    onClick={() => setActiveTemplate(template)}
+                                    className={`py-2 px-3 text-xs font-semibold rounded-md border ${activeTemplate === template ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-700'}`}
+                                >
+                                    {template}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Layout Form & Preview */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     <div className="lg:col-span-7 no-print">
+                        {/* Memastikan formData disalurkan kembali */}
                         <ReceiptForm
                             formData={formData}
                             setFormData={setFormData}
@@ -261,13 +184,13 @@ export default function ReceiptGenerator() {
                 </div>
             </div>
 
+            {/* Modal Master Data dengan props onReload agar form merespon data baru */}
             <MasterDataManagerModal
                 isOpen={isManagerOpen}
-                onClose={() => setIsManagerOpen(false)}
-                spbuList={spbuList}
-                operatorList={operatorList}
-                footerList={footerList}
-                onReload={loadMasterData}
+                onClose={() => {
+                    setIsManagerOpen(false);
+                    loadMasterData();
+                }}
             />
         </div>
     );

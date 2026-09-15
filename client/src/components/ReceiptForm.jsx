@@ -56,9 +56,9 @@ export default function ReceiptForm({
                     onChange={handleSelectSpbu}
                     className="w-full px-3 py-2 border rounded-md text-sm font-semibold bg-slate-50 focus:outline-none"
                 >
-                    {spbuList.map((s) => (
-                        <option key={s.id} value={s.spbuNo}>
-                            {s.spbuNo} - {s.spbuName} ({s.spbuCity})
+                    {spbuList.map((spbu) => (
+                        <option key={spbu.id} value={spbu.spbuNo}>
+                            {spbu.spbuNo} - {spbu.spbuName} ({spbu.spbuCity})
                         </option>
                     ))}
                 </select>
