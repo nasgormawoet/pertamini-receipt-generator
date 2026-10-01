@@ -1,7 +1,7 @@
 import React from 'react';
 
 export default function Template03({ formData, paperSize }) {
-    const change = Math.max(0, formData.cashGiven - formData.total);
+    const change = Math.max(0, (Number(formData.cashGiven) || 0) - (Number(formData.total) || 0));
 
     return (
         <div className="space-y-0.5 leading-none text-[10px]">

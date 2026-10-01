@@ -179,6 +179,43 @@ export default function ReceiptForm({
                         />
                     </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                        <label className="text-xs font-medium text-slate-600">Metode Pembayaran</label>
+                        <select
+                            value={formData.paymentMethod || 'CASH'}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, paymentMethod: e.target.value }))}
+                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-white focus:outline-none"
+                        >
+                            <option value="CASH">CASH</option>
+                            <option value="DEBIT">DEBIT</option>
+                            <option value="QRIS">QRIS</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium text-slate-600">Nominal Bayar Cash (Rp)</label>
+                        <input
+                            type="number"
+                            value={formData.cashGiven ?? ''}
+                            onChange={(e) => {
+                                const val = e.target.value === '' ? '' : Number(e.target.value);
+                                setFormData((prev) => ({ ...prev, cashGiven: val }));
+                            }}
+                            placeholder="Contoh: 100000"
+                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium text-slate-600">Kembalian (Rp)</label>
+                        <input
+                            type="text"
+                            readOnly
+                            value={`Rp ${Math.max(0, (Number(formData.cashGiven) || 0) - (Number(formData.total) || 0)).toLocaleString('id-ID')}`}
+                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-slate-50 text-slate-600 font-medium cursor-not-allowed focus:outline-none"
+                        />
+                    </div>
+                </div>
             </div>
 
             <hr className="border-slate-100" />

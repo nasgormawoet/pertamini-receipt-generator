@@ -2,7 +2,7 @@ import React from 'react';
 
 function Footer() {
     return (
-        <footer className="footer text-xs font-light text-center m-3">
+        <footer className="footer text-xs font-light text-center m-3 print:hidden">
             <p>&copy; 2026 AI <br/> All Token Used.</p>
         </footer>
     );

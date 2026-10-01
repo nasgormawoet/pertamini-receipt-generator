@@ -7,7 +7,7 @@ export default function Template01({ formData, paperSize }) {
     const fuelConfig = BBM_PRESETS.find((p) => p.name === formData.fuelType) || {};
     const isSubsidized = fuelConfig.isSubsidized && fuelConfig.subsidy > 0;
     const totalSubsidy = isSubsidized ? Math.round(fuelConfig.subsidy * formData.volume) : 0;
-    const change = Math.max(0, formData.cashGiven - formData.total);
+    const change = Math.max(0, (Number(formData.cashGiven) || 0) - (Number(formData.total) || 0));
 
     return (
         <div className="space-y-0.5">
@@ -104,8 +104,8 @@ export default function Template01({ formData, paperSize }) {
                     <span>Rp {Number(formData.total).toLocaleString('id-ID')}</span>
                 </div>
                 <div className="flex justify-between">
-                    <span>BAYAR ({formData.paymentMethod})</span>
-                    <span>Rp {Number(formData.cashGiven).toLocaleString('id-ID')}</span>
+                    <span>BAYAR ({formData.paymentMethod || 'CASH'})</span>
+                    <span>Rp {Number(formData.cashGiven || 0).toLocaleString('id-ID')}</span>
                 </div>
                 <div className="flex justify-between">
                     <span>KEMBALI</span>
