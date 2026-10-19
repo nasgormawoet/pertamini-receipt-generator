@@ -1,10 +1,10 @@
 import React from 'react';
-import { BBM_PRESETS } from '../../constants/fuel.js';
+import ReceiptSeparator from '../ReceiptSeparator';
 
-export default function Template01({ formData, paperSize }) {
+export default function Template01({ formData, paperSize, fuels= [] }) {
     const is80 = paperSize === '80mm';
     const [datePart, timePart] = (formData.dateTime || '').split(' ');
-    const fuelConfig = BBM_PRESETS.find((p) => p.name === formData.fuelType) || {};
+    const fuelConfig = fuels.find((p) => p.name === formData.fuelType) || {};
     const isSubsidized = fuelConfig.isSubsidized && fuelConfig.subsidy > 0;
     const totalSubsidy = isSubsidized ? Math.round(fuelConfig.subsidy * formData.volume) : 0;
     const change = Math.max(0, (Number(formData.cashGiven) || 0) - (Number(formData.total) || 0));
@@ -25,7 +25,7 @@ export default function Template01({ formData, paperSize }) {
                 <div className="uppercase">{formData.spbuCity}</div>
             </div>
 
-            <div className="border-t border-dashed border-black my-2"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Detail Meta */}
             <table className="w-full border-collapse">
@@ -63,7 +63,7 @@ export default function Template01({ formData, paperSize }) {
                 </tbody>
             </table>
 
-            <div className="border-t border-dashed border-black my-2"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Item Transaksi */}
             <div className="space-y-0.5">
@@ -95,7 +95,7 @@ export default function Template01({ formData, paperSize }) {
                 )}
             </div>
 
-            <div className="border-t border-dashed border-black my-2"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Pembayaran */}
             <div className="space-y-0.5">
@@ -113,7 +113,7 @@ export default function Template01({ formData, paperSize }) {
                 </div>
             </div>
 
-            <div className="border-t border-dashed border-black my-2"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Footer */}
             <div className={`text-center space-y-0.5 pt-1 ${is80 ? 'text-[10px]' : 'text-[9px]'}`}>

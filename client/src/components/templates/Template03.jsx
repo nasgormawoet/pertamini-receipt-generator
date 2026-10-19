@@ -1,36 +1,217 @@
 import React from 'react';
+import { BBM_PRESETS } from '../../constants/fuel';
 
-export default function Template03({ formData, paperSize }) {
-    const change = Math.max(0, (Number(formData.cashGiven) || 0) - (Number(formData.total) || 0));
+export default function Template03({ formData = {}, paperSize = '58mm' }) {
+    const is80 = paperSize === '80mm';
+
+    // 1. Pisahkan Tanggal & Jam
+    let datePart = '01/10/2026';
+    let timePart = '08:15:31';
+    if (formData.dateTime) {
+        const parts = formData.dateTime.split(' ');
+        if (parts[0]) datePart = parts[0];
+        if (parts[1]) timePart = parts[1];
+    }
+
+    // 2. Cari data BBM dari fuel.js berdasarkan pilihan di form
+    const selectedFuel = BBM_PRESETS.find((item) => item.name === formData.fuelType) || {
+        name: formData.fuelType || 'PERTALITE',
+        originalPrice: 15892,
+        subsidi: 5892,
+        price: 10000,
+    };
+
+    // Bersihkan keterangan "(RON 90)" dsb agar tampil "PERTALITE" seperti di struk asli
+    const cleanBBMName = (selectedFuel.name || 'PERTALITE')
+        .replace(/\s*\(.*?\)/g, '')
+        .toUpperCase()
+        .trim();
+
+    // 3. Kalkulasi Harga & Subsidi dari variabel fuel.js
+    const subsidiPerLiter = Number(selectedFuel.subsidi) || 0;
+    const isSubsidized = subsidiPerLiter > 0;
+
+    // Gunakan harga dari formData (jika diedit manual) atau dari preset fuel.js
+    const jualPerLiter = Number(formData.pricePerLiter) || Number(selectedFuel.price) || 10000;
+    const nonSubsidiPerLiter = jualPerLiter + subsidiPerLiter;
+
+    // 4. Kalkulasi Total Penjualan (Rp)
+    const displayVolume = Number(formData.volume) || 0;
+    const totalKonsumen = Number(formData.total) || Math.round(displayVolume * jualPerLiter);
+    const totalSubsidi = Math.round(displayVolume * subsidiPerLiter);
+    const totalTanpaSubsidi = totalKonsumen + totalSubsidi;
+
+    // Format angka ribuan (menggunakan pemisah koma/titik sesuai struk)
+    const formatNum = (num) => Math.round(num).toLocaleString('en-US');
 
     return (
-        <div className="space-y-0.5 leading-none text-[10px]">
-            <div className="text-center font-bold">SPBU {formData.spbuNo} - {formData.spbuCity}</div>
-            <div className="text-center text-[9px]">{formData.spbuAddress}</div>
-            <div className="border-b border-black my-1"></div>
-
-            <div className="flex justify-between text-[9px]">
-                <span>{formData.dateTime}</span>
-                <span>P:{formData.pompaNo} | {formData.operator}</span>
+        <div
+            className={`bg-white font-mono text-black leading-tight select-none mx-auto ${
+                is80 ? 'w-[360px] p-6 text-[13px] space-y-1.5' : 'w-[280px] p-4 text-[10.5px] space-y-1'
+            }`}
+        >
+            {/* Header & Logo Pertamina */}
+            <div className="flex flex-col items-center justify-center text-center">
+                <img
+                    src="/logo.png"
+                    alt="Logo Pertamina"
+                    className="mx-auto block object-contain grayscale contrast-200 mb-1"
+                    style={{ width: '120px', height: 'auto', maxHeight: '40px' }}
+                />
+                <div className="font-bold text-[11px] tracking-widest">
+                    {formData.spbuNo || '5463117'}
+                </div>
+                <div className="font-bold uppercase text-[11px] leading-tight mt-0.5">
+                    {formData.spbuName || `SPBU ${formData.spbuCity || 'PATIHAN, MANGUNHARJO'}`}
+                </div>
+                <div className="uppercase text-[9.5px] leading-tight mt-0.5">
+                    {formData.spbuAddress || 'DS. PATIHAN KEC. MANGUNHARJO'}
+                </div>
             </div>
 
-            <div className="border-b border-dotted border-black my-1"></div>
-
-            <div className="font-bold">{formData.fuelType}</div>
-            <div className="flex justify-between">
-                <span>{Number(formData.volume).toFixed(2)}L @ {Number(formData.pricePerLiter).toLocaleString('id-ID')}</span>
-                <span className="font-bold">Rp {Number(formData.total).toLocaleString('id-ID')}</span>
+            {/* Shift & No. Trans */}
+            <div className="flex justify-between text-[10px] pt-2">
+                <span>Shift: {formData.shift || '1'}</span>
+                <span>No. Trans: {formData.trxId || '682477'}</span>
+            </div>
+            <div className="text-[10px] pb-1">
+                Waktu: {datePart} {timePart}
             </div>
 
-            <div className="border-b border-dotted border-black my-1"></div>
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
 
-            <div className="flex justify-between font-bold">
-                <span>TOTAL: Rp {Number(formData.total).toLocaleString('id-ID')}</span>
-                <span>KEMBALI: Rp {change.toLocaleString('id-ID')}</span>
+            {/* Detail Pompa, Operator, BBM & Volume */}
+            <div className="space-y-0.5">
+                <div className="flex">
+                    <span className="w-28 shrink-0">Pulau/Pompa</span>
+                    <span className="mr-1.5">:</span>
+                    <span>{formData.pompaNo || '9'}</span>
+                </div>
+                <div className="flex">
+                    <span className="w-28 shrink-0">Operator</span>
+                    <span className="mr-1.5">:</span>
+                    <span className="uppercase">{formData.operator || 'KRISTA'}</span>
+                </div>
+                <div className="flex">
+                    <span className="w-28 shrink-0">Jenis BBM</span>
+                    <span className="mr-1.5">:</span>
+                    <span className="uppercase">{cleanBBMName}</span>
+                </div>
+                <div className="flex">
+                    <span className="w-28 shrink-0">Volume</span>
+                    <span className="mr-1.5">:</span>
+                    <span>{displayVolume.toFixed(2)} liter</span>
+                </div>
             </div>
 
-            <div className="border-b border-black my-1"></div>
-            <div className="text-center text-[8.5px] pt-0.5 uppercase">{formData.thanksText}</div>
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+
+            {/* Blok Informasi Harga BBM (Rp/Liter) */}
+            <div className="space-y-0.5">
+                <div className="mb-0.5">Informasi Harga BBM (Rp/Liter)</div>
+                {isSubsidized ? (
+                    <>
+                        <div className="flex">
+                            <span className="w-36 shrink-0">Harga Non Subsidi</span>
+                            <span>:</span>
+                            <span className="w-16 text-right">{formatNum(nonSubsidiPerLiter)}</span>
+                        </div>
+                        <div className="flex">
+                            <span className="w-36 shrink-0">Subsidi Pemerintah</span>
+                            <span>:</span>
+                            <span className="w-16 text-right">{formatNum(subsidiPerLiter)}</span>
+                        </div>
+                        <div className="flex">
+                            <span className="w-36 shrink-0">Harga Jual</span>
+                            <span>:</span>
+                            <span className="w-16 text-right">{formatNum(jualPerLiter)}</span>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex">
+                        <span className="w-36 shrink-0">Harga Jual</span>
+                        <span>:</span>
+                        <span className="w-16 text-right">{formatNum(jualPerLiter)}</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+
+            {/* Blok Total Penjualan (Rp) */}
+            <div className="space-y-0.5">
+                <div className="mb-0.5">Total Penjualan (Rp)</div>
+                {isSubsidized ? (
+                    <>
+                        <div className="flex">
+                            <span className="w-36 shrink-0">Tanpa Subsidi</span>
+                            <span>:</span>
+                            <span className="w-20 text-right">{formatNum(totalTanpaSubsidi)}</span>
+                        </div>
+                        <div className="flex">
+                            <span className="w-36 shrink-0">Subsidi Pemerintah</span>
+                            <span>:</span>
+                            <span className="w-20 text-right">{formatNum(totalSubsidi)}</span>
+                        </div>
+                        <div className="flex font-bold">
+                            <span className="w-36 shrink-0">Dibayar Konsumen</span>
+                            <span>:</span>
+                            <span className="w-20 text-right">{formatNum(totalKonsumen)}</span>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex font-bold">
+                        <span className="w-36 shrink-0">Dibayar Konsumen</span>
+                        <span>:</span>
+                        <span className="w-20 text-right">{formatNum(totalKonsumen)}</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+
+            {/* Metode Pembayaran */}
+            <div className="py-0.5">
+                <div className="uppercase">{formData.paymentMethod || 'CASH'}</div>
+                <div className="text-right font-bold">{formatNum(formData.cashGiven || totalKonsumen)}</div>
+                {formData.cashGiven > totalKonsumen && (
+                    <div className="flex justify-between mt-0.5">
+                        <span>KEMBALI</span>
+                        <span>{formatNum(formData.cashGiven - totalKonsumen)}</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+
+            {/* Nomor Plat */}
+            {formData.platNo && (
+                <>
+                    <div className="flex py-0.5">
+                        <span className="w-20 shrink-0">No. Plat</span>
+                        <span className="mr-1.5">:</span>
+                        <span className="uppercase">{formData.platNo}</span>
+                    </div>
+                    <div className="border-t border-dashed border-black/60 my-1.5"></div>
+                </>
+            )}
+
+            {/* Pesan Footer Subsidi */}
+            <div className="text-center text-[9.5px] pt-1 leading-snug">
+                {isSubsidized ? (
+                    <div>
+                        <div>Anda mendapat subsidi dari</div>
+                        <div>Pemerintah sebesar Rp {formatNum(totalSubsidi)}</div>
+                        <div>(Perhitungan Subsidi Unaudited</div>
+                        <div>atau Estimasi). Gunakan BBM</div>
+                        <div>Subsidi secara bijak.</div>
+                    </div>
+                ) : (
+                    <div className="whitespace-pre-line uppercase">
+                        {formData.thanksText || 'TERIMA KASIH & SELAMAT JALAN'}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

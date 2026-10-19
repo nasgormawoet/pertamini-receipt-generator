@@ -1,19 +1,29 @@
 // client/src/components/MasterDataManagerModal.jsx
 import React, { useState, useEffect } from 'react';
-import { fetchData, addData, deleteData } from '../services/api';
+import { fetchData, addData, updateData, deleteData } from '../services/api';
 
-export default function MasterDataManagerModal({ isOpen, onClose }) {
-    const [activeTab, setActiveTab] = useState('spbu'); // 'spbu' | 'operator' | 'footer'
+export default function MasterDataManagerModal({ isOpen, onClose, onDataChanged }) {
+    const [activeTab, setActiveTab] = useState('spbu'); // 'spbu' | 'operator' | 'fuel' | 'footer'
 
     // State untuk menyimpan daftar data dari database
     const [spbuList, setSpbuList] = useState([]);
     const [operatorList, setOperatorList] = useState([]);
+    const [fuelList, setFuelList] = useState([]);
     const [footerList, setFooterList] = useState([]);
 
     // State untuk form input
     const [spbuForm, setSpbuForm] = useState({ spbuNo: '', spbuName: '', spbuAddress: '', spbuCity: '' });
     const [opForm, setOpForm] = useState({ name: '', defaultShift: '1' });
     const [footerForm, setFooterForm] = useState({ title: '', content: '' });
+
+    // State khusus form BBM (mendukung Tambah & Edit)
+    const [editingFuelId, setEditingFuelId] = useState(null);
+    const [fuelForm, setFuelForm] = useState({
+        name: '',
+        originalPrice: '',
+        subsidi: 0,
+        price: '',
+    });
 
     // Load semua data setiap kali modal dibuka
     useEffect(() => {
@@ -24,15 +34,39 @@ export default function MasterDataManagerModal({ isOpen, onClose }) {
 
     const loadAllData = async () => {
         try {
-            setSpbuList(await fetchData('spbu') || []);
-            setOperatorList(await fetchData('operators') || []);
-            setFooterList(await fetchData('footers') || []);
+            setSpbuList((await fetchData('spbu')) || []);
+            setOperatorList((await fetchData('operators')) || []);
+            setFuelList((await fetchData('fuels')) || []);
+            setFooterList((await fetchData('footers')) || []);
+            if (onDataChanged) onDataChanged();
         } catch (error) {
-            console.error("Gagal memuat data master:", error);
+            console.error('Gagal memuat data master:', error);
         }
     };
 
     if (!isOpen) return null;
+
+    // --- KALKULASI OTOMATIS FORM BBM ---
+    const handleFuelFieldChange = (field, value) => {
+        if (field === 'name') {
+            setFuelForm((prev) => ({ ...prev, name: value }));
+            return;
+        }
+
+        const numVal = parseInt(value, 10) || 0;
+        setFuelForm((prev) => {
+            const updated = { ...prev, [field]: numVal };
+            if (field === 'originalPrice' || field === 'subsidi') {
+                const orig = field === 'originalPrice' ? numVal : Number(prev.originalPrice) || 0;
+                const sub = field === 'subsidi' ? numVal : Number(prev.subsidi) || 0;
+                updated.price = Math.max(0, orig - sub);
+            } else if (field === 'price') {
+                const sub = Number(prev.subsidi) || 0;
+                updated.originalPrice = numVal + sub;
+            }
+            return updated;
+        });
+    };
 
     // --- HANDLERS ---
     const handleSaveSpbu = async (e) => {
@@ -49,6 +83,41 @@ export default function MasterDataManagerModal({ isOpen, onClose }) {
         loadAllData();
     };
 
+    const handleSaveFuel = async (e) => {
+        e.preventDefault();
+        const payload = {
+            name: fuelForm.name.toUpperCase().trim(),
+            originalPrice: Number(fuelForm.originalPrice) || 0,
+            subsidi: Number(fuelForm.subsidi) || 0,
+            price: Number(fuelForm.price) || 0,
+        };
+
+        if (editingFuelId) {
+            await updateData('fuels', editingFuelId, payload);
+        } else {
+            await addData('fuels', payload);
+        }
+
+        setEditingFuelId(null);
+        setFuelForm({ name: '', originalPrice: '', subsidi: 0, price: '' });
+        loadAllData();
+    };
+
+    const handleEditFuel = (fuel) => {
+        setEditingFuelId(fuel.id);
+        setFuelForm({
+            name: fuel.name,
+            originalPrice: fuel.originalPrice,
+            subsidi: fuel.subsidi,
+            price: fuel.price,
+        });
+    };
+
+    const handleCancelEditFuel = () => {
+        setEditingFuelId(null);
+        setFuelForm({ name: '', originalPrice: '', subsidi: 0, price: '' });
+    };
+
     const handleSaveFooter = async (e) => {
         e.preventDefault();
         await addData('footers', footerForm);
@@ -60,13 +129,15 @@ export default function MasterDataManagerModal({ isOpen, onClose }) {
         if (!window.confirm('Hapus item ini?')) return;
         try {
             await deleteData(endpoint, id);
+            if (endpoint === 'fuels' && editingFuelId === id) {
+                handleCancelEditFuel();
+            }
             loadAllData();
         } catch (error) {
             alert('Gagal menghapus data.');
         }
     };
 
-    // --- RENDER UI (Sama persis dengan desain Tailwind Anda) ---
     return (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -75,7 +146,7 @@ export default function MasterDataManagerModal({ isOpen, onClose }) {
                 <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
                     <div className="flex gap-4 items-center flex-wrap">
                         <h2 className="text-lg font-bold text-slate-800">Master Data Management</h2>
-                        <div className="flex bg-slate-200 p-1 rounded-lg text-xs font-semibold gap-1">
+                        <div className="flex bg-slate-200 p-1 rounded-lg text-xs font-semibold gap-1 flex-wrap">
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('spbu')}
@@ -89,6 +160,13 @@ export default function MasterDataManagerModal({ isOpen, onClose }) {
                                 className={`px-3 py-1.5 rounded-md transition ${activeTab === 'operator' ? 'bg-white shadow text-slate-900' : 'text-slate-600'}`}
                             >
                                 Operator ({operatorList.length})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('fuel')}
+                                className={`px-3 py-1.5 rounded-md transition ${activeTab === 'fuel' ? 'bg-white shadow text-slate-900' : 'text-slate-600'}`}
+                            >
+                                BBM & Subsidi ({fuelList.length})
                             </button>
                             <button
                                 type="button"
@@ -217,6 +295,136 @@ export default function MasterDataManagerModal({ isOpen, onClose }) {
                                         <td className="p-3 text-slate-600">Shift {op.defaultShift}</td>
                                         <td className="p-3 text-right">
                                             <button onClick={() => handleDelete('operators', op.id)} className="text-red-600 hover:underline">Hapus</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* TAB BBM & SUBSIDI */}
+                    {activeTab === 'fuel' && (
+                        <div className="space-y-6">
+                            <form onSubmit={handleSaveFuel} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                                        {editingFuelId ? 'Edit Data Harga & Subsidi BBM' : 'Tambah Jenis BBM Baru'}
+                                    </span>
+                                    {editingFuelId && (
+                                        <button
+                                            type="button"
+                                            onClick={handleCancelEditFuel}
+                                            className="text-xs text-slate-500 hover:text-slate-800 underline"
+                                        >
+                                            Batal Edit
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div>
+                                        <label className="text-xs font-medium text-slate-600">Nama Produk BBM</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            placeholder="PERTALITE (RON 90)"
+                                            value={fuelForm.name}
+                                            onChange={(e) => handleFuelFieldChange('name', e.target.value)}
+                                            className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-slate-600">Harga Non-Subsidi (Rp/L)</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            placeholder="15892"
+                                            value={fuelForm.originalPrice}
+                                            onChange={(e) => handleFuelFieldChange('originalPrice', e.target.value)}
+                                            className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-slate-600">Subsidi Pemerintah (Rp/L)</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            placeholder="5892"
+                                            value={fuelForm.subsidi}
+                                            onChange={(e) => handleFuelFieldChange('subsidi', e.target.value)}
+                                            className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs bg-white focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-medium text-slate-600">Harga Jual Konsumen (Rp/L)</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            placeholder="10000"
+                                            value={fuelForm.price}
+                                            onChange={(e) => handleFuelFieldChange('price', e.target.value)}
+                                            className="w-full mt-1 px-3 py-1.5 border rounded-md text-xs font-semibold text-emerald-700 bg-white focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        type="submit"
+                                        className={`px-4 py-2 text-white rounded-md text-xs font-semibold transition ${
+                                            editingFuelId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'
+                                        }`}
+                                    >
+                                        {editingFuelId ? 'Simpan Perubahan BBM' : 'Tambah BBM'}
+                                    </button>
+                                </div>
+                            </form>
+
+                            <table className="w-full text-left border-collapse text-xs border border-slate-200 rounded-lg overflow-hidden">
+                                <thead className="bg-slate-100 text-slate-600">
+                                <tr>
+                                    <th className="p-3">Nama BBM</th>
+                                    <th className="p-3 text-right">Harga Non-Subsidi</th>
+                                    <th className="p-3 text-right">Subsidi / Liter</th>
+                                    <th className="p-3 text-right">Harga Jual</th>
+                                    <th className="p-3 text-right">Aksi</th>
+                                </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                {fuelList.map((f) => (
+                                    <tr key={f.id} className="hover:bg-slate-50">
+                                        <td className="p-3 font-semibold text-slate-900">{f.name}</td>
+                                        <td className="p-3 text-right text-slate-600">
+                                            Rp {Number(f.originalPrice).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="p-3 text-right">
+                                            {Number(f.subsidi) > 0 ? (
+                                                <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium">
+                                                    Rp {Number(f.subsidi).toLocaleString('id-ID')}
+                                                </span>
+                                            ) : (
+                                                <span className="text-slate-400">-</span>
+                                            )}
+                                        </td>
+                                        <td className="p-3 text-right font-bold text-emerald-700">
+                                            Rp {Number(f.price).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="p-3 text-right space-x-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleEditFuel(f)}
+                                                className="text-blue-600 hover:underline font-medium"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete('fuels', f.id)}
+                                                className="text-red-600 hover:underline"
+                                            >
+                                                Hapus
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

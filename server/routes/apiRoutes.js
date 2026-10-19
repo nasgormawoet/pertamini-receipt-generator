@@ -12,6 +12,12 @@ router.get('/operators', masterController.getOperators);
 router.post('/operators', masterController.addOperator);
 router.delete('/operators/:id', masterController.deleteOperator);
 
+// Rute untuk Manajemen BBM
+router.get('/fuels', masterController.getFuels);
+router.post('/fuels', masterController.addFuel);
+router.put('/fuels/:id', masterController.updateFuel);
+router.delete('/fuels/:id', masterController.deleteFuel);
+
 // Rute untuk Footers
 router.get('/footers', masterController.getFooters);
 router.post('/footers', masterController.addFooter);

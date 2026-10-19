@@ -1,5 +1,6 @@
 const db = require('../config/db');
 
+// --- SPBU ---
 const getSpbu = (req, res) => {
     db.all('SELECT * FROM spbu', [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -23,6 +24,7 @@ const deleteSpbu = (req, res) => {
     });
 };
 
+// --- OPERATORS ---
 const getOperators = (req, res) => {
     db.all('SELECT * FROM operators', [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -46,6 +48,7 @@ const deleteOperator = (req, res) => {
     });
 };
 
+// --- FOOTERS ---
 const getFooters = (req, res) => {
     db.all('SELECT * FROM footers', [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -69,8 +72,56 @@ const deleteFooter = (req, res) => {
     });
 };
 
+// --- FUELS (BBM & SUBSIDI) ---
+const getFuels = (req, res) => {
+    db.all('SELECT * FROM fuels ORDER BY id ASC', [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ data: rows });
+    });
+};
+
+const addFuel = (req, res) => {
+    const { name, originalPrice, subsidi, price } = req.body;
+    const sql = 'INSERT INTO fuels (name, originalPrice, subsidi, price) VALUES (?, ?, ?, ?)';
+    const params = [
+        name,
+        Number(originalPrice) || 0,
+        Number(subsidi) || 0,
+        Number(price) || 0
+    ];
+    db.run(sql, params, function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ id: this.lastID, message: 'BBM berhasil ditambahkan!' });
+    });
+};
+
+const updateFuel = (req, res) => {
+    const { id } = req.params;
+    const { name, originalPrice, subsidi, price } = req.body;
+    const sql = 'UPDATE fuels SET name = ?, originalPrice = ?, subsidi = ?, price = ? WHERE id = ?';
+    const params = [
+        name,
+        Number(originalPrice) || 0,
+        Number(subsidi) || 0,
+        Number(price) || 0,
+        id
+    ];
+    db.run(sql, params, function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ id: Number(id), message: 'BBM berhasil diperbarui!' });
+    });
+};
+
+const deleteFuel = (req, res) => {
+    db.run('DELETE FROM fuels WHERE id = ?', req.params.id, function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'BBM berhasil dihapus!' });
+    });
+};
+
 module.exports = {
     getSpbu, addSpbu, deleteSpbu,
     getOperators, addOperator, deleteOperator,
-    getFooters, addFooter, deleteFooter
+    getFooters, addFooter, deleteFooter,
+    getFuels, addFuel, updateFuel, deleteFuel
 };

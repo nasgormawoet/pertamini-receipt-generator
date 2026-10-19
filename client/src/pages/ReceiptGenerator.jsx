@@ -3,16 +3,13 @@ import PrintStyles from '../components/PrintStyles.jsx';
 import ReceiptForm from '../components/ReceiptForm.jsx';
 import ReceiptPreview from '../components/ReceiptPreview.jsx';
 import MasterDataManagerModal from '../components/MasterDataManagerModal.jsx';
-import { BBM_PRESETS } from '../constants/fuel.js';
 import { fetchData } from '../services/api.js';
 
 const getAutoDateTime = () => {
     const now = new Date();
-    const pad = (num) => num.toString().padStart(2, '0'); // Menambah angka 0 di depan jika di bawah 10
-
+    const pad = (num) => num.toString().padStart(2, '0');
     const date = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
     const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-
     return `${date} ${time}`;
 };
 
@@ -20,11 +17,9 @@ const getAutoTrxId = () => {
     const now = new Date();
     const pad = (num) => num.toString().padStart(2, '0');
     const yyyymmdd = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
-
-    const randomNum = Math.floor(1000 + Math.random() * 9000); // Menghasilkan angka acak 1000 - 9999
-
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
     return `TRX-${yyyymmdd}-${randomNum}`;
-}
+};
 
 export default function ReceiptGenerator() {
     const [paperSize, setPaperSize] = useState('58mm');
@@ -34,6 +29,7 @@ export default function ReceiptGenerator() {
     const [spbuList, setSpbuList] = useState([]);
     const [operatorList, setOperatorList] = useState([]);
     const [footerList, setFooterList] = useState([]);
+    const [fuels, setFuels] = useState([]); // Murni dari database SQLite
 
     const [formData, setFormData] = useState({
         spbuNo: '',
@@ -47,45 +43,56 @@ export default function ReceiptGenerator() {
         pompaNo: '01',
         operator: '',
         platNo: '',
-        fuelType: 'PERTAMAX (RON 92)',
-        pricePerLiter: 12950,
+        fuelType: '',
+        pricePerLiter: 0,
         volume: 15.44,
-        total: 200000,
+        total: 0,
         paymentMethod: 'CASH',
         cashGiven: 200000,
         thanksText: 'TERIMA KASIH & SELAMAT JALAN\nPASTIKAN DISPLAY POMPA DI ANGKA NOL',
+        separatorStyle: 'dashed'
     });
 
     const loadMasterData = async () => {
         try {
-            // Menggunakan fetchData dari Axios agar format data dan URL tepat
+            const dbFuels = (await fetchData('fuels')) || [];
             const dataSpbu = (await fetchData('spbu')) || [];
             const dataOp = (await fetchData('operators')) || [];
             const dataFooter = (await fetchData('footers')) || [];
 
+            setFuels(dbFuels);
             setSpbuList(dataSpbu);
             setOperatorList(dataOp);
             setFooterList(dataFooter);
 
-            // Setel nilai default di form jika data tersedia di database
-            if (dataSpbu.length > 0 && !formData.spbuNo) {
-                setFormData((prev) => ({
-                    ...prev,
-                    spbuNo: dataSpbu[0].spbuNo,
-                    spbuName: dataSpbu[0].spbuName,
-                    spbuAddress: dataSpbu[0].spbuAddress,
-                    spbuCity: dataSpbu[0].spbuCity,
-                    spbuPhone: dataSpbu[0].spbuPhone || '',
-                }));
-            }
+            setFormData((prev) => {
+                const updated = { ...prev };
 
-            if (dataOp.length > 0 && !formData.operator) {
-                setFormData((prev) => ({
-                    ...prev,
-                    operator: dataOp[0].name,
-                    shift: dataOp[0].defaultShift || '1',
-                }));
-            }
+                // 1. Sinkronkan BBM & Harga terbaru dari database
+                if (dbFuels.length > 0) {
+                    const currentFuel = dbFuels.find((f) => f.name === prev.fuelType) || dbFuels[0];
+                    updated.fuelType = currentFuel.name;
+                    updated.pricePerLiter = Number(currentFuel.price);
+                    updated.total = Math.round(prev.volume * Number(currentFuel.price));
+                }
+
+                // 2. Set default SPBU jika kosong
+                if (dataSpbu.length > 0 && !prev.spbuNo) {
+                    updated.spbuNo = dataSpbu[0].spbuNo;
+                    updated.spbuName = dataSpbu[0].spbuName;
+                    updated.spbuAddress = dataSpbu[0].spbuAddress;
+                    updated.spbuCity = dataSpbu[0].spbuCity;
+                    updated.spbuPhone = dataSpbu[0].spbuPhone || '';
+                }
+
+                // 3. Set default Operator jika kosong
+                if (dataOp.length > 0 && !prev.operator) {
+                    updated.operator = dataOp[0].name;
+                    updated.shift = dataOp[0].defaultShift || '1';
+                }
+
+                return updated;
+            });
         } catch (err) {
             console.error('Gagal mengambil master data:', err);
         }
@@ -97,9 +104,11 @@ export default function ReceiptGenerator() {
 
     const handlePriceOrVolumeChange = (field, value) => {
         const numericVal = parseFloat(value) || 0;
+
         if (field === 'fuelType') {
-            const selected = BBM_PRESETS.find((p) => p.name === value);
-            const newPrice = selected ? selected.price : formData.pricePerLiter;
+            // Mengambil harga dari state `fuels` database, BUKAN BBM_PRESETS lagi
+            const selected = fuels.find((p) => p.name === value);
+            const newPrice = selected ? Number(selected.price) : formData.pricePerLiter;
             setFormData((prev) => ({
                 ...prev,
                 fuelType: value,
@@ -108,6 +117,16 @@ export default function ReceiptGenerator() {
             }));
             return;
         }
+
+        if (field === 'pricePerLiter') {
+            setFormData((prev) => ({
+                ...prev,
+                pricePerLiter: numericVal,
+                total: Math.round(prev.volume * numericVal),
+            }));
+            return;
+        }
+
         if (field === 'volume') {
             setFormData((prev) => ({
                 ...prev,
@@ -115,6 +134,7 @@ export default function ReceiptGenerator() {
                 total: Math.round(numericVal * prev.pricePerLiter),
             }));
         }
+
         if (field === 'total') {
             setFormData((prev) => ({
                 ...prev,
@@ -123,6 +143,7 @@ export default function ReceiptGenerator() {
             }));
         }
     };
+
     const handleReset = () => {
         if (window.confirm('Bersihkan form untuk transaksi baru?')) {
             setFormData((prev) => ({
@@ -204,10 +225,10 @@ export default function ReceiptGenerator() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     <div className="lg:col-span-7 no-print">
-                        {/* Memastikan formData disalurkan kembali */}
                         <ReceiptForm
                             formData={formData}
                             setFormData={setFormData}
+                            fuels={fuels}
                             onPriceOrVolumeChange={handlePriceOrVolumeChange}
                             spbuList={spbuList}
                             operatorList={operatorList}
@@ -217,6 +238,7 @@ export default function ReceiptGenerator() {
                     <div className="lg:col-span-5 flex justify-center sticky top-8">
                         <ReceiptPreview
                             formData={formData}
+                            fuels={fuels}
                             paperSize={paperSize}
                             activeTemplate={activeTemplate}
                         />
@@ -224,9 +246,9 @@ export default function ReceiptGenerator() {
                 </div>
             </div>
 
-            {/* Modal Master Data dengan props onReload agar form merespon data baru */}
             <MasterDataManagerModal
                 isOpen={isManagerOpen}
+                onDataChanged={loadMasterData}
                 onClose={() => {
                     setIsManagerOpen(false);
                     loadMasterData();

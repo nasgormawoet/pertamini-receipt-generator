@@ -27,7 +27,7 @@ export default function ReceiptPreview({ formData, paperSize, activeTemplate }) 
         <div
             id="receipt-area"
             className={`bg-white shadow-md rounded-sm font-mono text-black transition-all ${
-                is80 ? 'w-[380px] p-5 text-[12px] leading-normal' : 'w-[290px] p-3 text-[10.5px] leading-tight'
+                is80 ? 'w-95 p-5 text-[12px] leading-normal' : 'w-58 p-3 text-[10.5px] leading-tight'
             }`}
         >
             <SelectedComponent formData={formData} paperSize={paperSize} />

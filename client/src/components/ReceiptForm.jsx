@@ -1,9 +1,9 @@
 import React from 'react';
-import { BBM_PRESETS } from '../constants/fuel.js';
 
 export default function ReceiptForm({
                                         formData,
                                         setFormData,
+                                        fuels= [],
                                         onPriceOrVolumeChange,
                                         spbuList = [],
                                         operatorList = [],
@@ -141,9 +141,13 @@ export default function ReceiptForm({
                         <select
                             value={formData.fuelType}
                             onChange={(e) => onPriceOrVolumeChange('fuelType', e.target.value)}
-                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-white focus:outline-none" >
-                            {BBM_PRESETS.map((p) => (
-                                <option key={p.name} value={p.name}>{p.name}</option>
+                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+                        >
+                            {fuels.map((item) => (
+                                <option key={item.name} value={item.name}>
+                                    {item.name} — Rp {item.price.toLocaleString('id-ID')}/L
+                                    {item.subsidi > 0 ? ` (Subsidi Rp ${item.subsidi.toLocaleString('id-ID')})` : ''}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -214,6 +218,24 @@ export default function ReceiptForm({
                             value={`Rp ${Math.max(0, (Number(formData.cashGiven) || 0) - (Number(formData.total) || 0)).toLocaleString('id-ID')}`}
                             className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-slate-50 text-slate-600 font-medium cursor-not-allowed focus:outline-none"
                         />
+                    </div>
+                </div>
+                <div className="py-6">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Pengaturan Tampilan Struk</h3>
+
+                    <div>
+                        <label className="text-xs font-medium text-slate-600">Gaya Pemisah (Separator)</label>
+                        <select
+                            value={formData.separatorStyle || 'dashed'}
+                            onChange={(e) => setFormData({ ...formData, separatorStyle: e.target.value })}
+                            className="w-full mt-1 px-3 py-2 border rounded-md text-sm bg-white focus:outline-none"
+                        >
+                            <option value="dashed">Garis Putus-Putus (- - -)</option>
+                            <option value="equals">Garis Sama Dengan (= = =)</option>
+                            <option value="stars">Simbol Bintang (* * *)</option>
+                            <option value="tilde">Simbol Gelombang (~ ~ ~)</option>
+                            <option value="solid">Garis Sambung (———)</option>
+                        </select>
                     </div>
                 </div>
             </div>

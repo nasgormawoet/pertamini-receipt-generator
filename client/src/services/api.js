@@ -12,6 +12,11 @@ export const addData = async (endpoint, data) => {
     return response.data;
 };
 
+export const updateData = async (endpoint, id, data) => {
+    const response = await axios.put(`${API_URL}/${endpoint}/${id}`, data);
+    return response.data;
+};
+
 export const deleteData = async (endpoint, id) => {
     const response = await axios.delete(`${API_URL}/${endpoint}/${id}`);
     return response.data;
