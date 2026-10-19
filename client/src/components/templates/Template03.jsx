@@ -1,5 +1,6 @@
 import React from 'react';
 import { BBM_PRESETS } from '../../constants/fuel';
+import ReceiptSeparator from "../ReceiptSeparator.jsx";
 
 export default function Template03({ formData = {}, paperSize = '58mm' }) {
     const is80 = paperSize === '80mm';
@@ -45,12 +46,8 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
     const formatNum = (num) => Math.round(num).toLocaleString('en-US');
 
     return (
-        <div
-            className={`bg-white font-mono text-black leading-tight select-none mx-auto ${
-                is80 ? 'w-[360px] p-6 text-[13px] space-y-1.5' : 'w-[280px] p-4 text-[10.5px] space-y-1'
-            }`}
-        >
-            {/* Header & Logo Pertamina */}
+        <div className="space-y-0.5">
+            {/* Header */}
             <div className="flex flex-col items-center justify-center text-center">
                 <img
                     src="/logo.png"
@@ -59,17 +56,20 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
                     style={{ width: '120px', height: 'auto', maxHeight: '40px' }}
                 />
                 <div className="font-bold text-[11px] tracking-widest">
-                    {formData.spbuNo || '5463117'}
+                    {formData.spbuNo}
                 </div>
                 <div className="font-bold uppercase text-[11px] leading-tight mt-0.5">
-                    {formData.spbuName || `SPBU ${formData.spbuCity || 'PATIHAN, MANGUNHARJO'}`}
+                    {formData.spbuName}
                 </div>
                 <div className="uppercase text-[9.5px] leading-tight mt-0.5">
-                    {formData.spbuAddress || 'DS. PATIHAN KEC. MANGUNHARJO'}
+                    {formData.spbuAddress}
                 </div>
             </div>
 
-            {/* Shift & No. Trans */}
+
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
+
+            {/* Detail Meta */}
             <div className="flex justify-between text-[10px] pt-2">
                 <span>Shift: {formData.shift || '1'}</span>
                 <span>No. Trans: {formData.trxId || '682477'}</span>
@@ -78,7 +78,7 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
                 Waktu: {datePart} {timePart}
             </div>
 
-            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Detail Pompa, Operator, BBM & Volume */}
             <div className="space-y-0.5">
@@ -104,7 +104,7 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
                 </div>
             </div>
 
-            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Blok Informasi Harga BBM (Rp/Liter) */}
             <div className="space-y-0.5">
@@ -168,7 +168,7 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
                 )}
             </div>
 
-            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Metode Pembayaran */}
             <div className="py-0.5">
@@ -182,7 +182,7 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
                 )}
             </div>
 
-            <div className="border-t border-dashed border-black/60 my-1.5"></div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* Nomor Plat */}
             {formData.platNo && (

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReceiptSeparator from "../ReceiptSeparator.jsx";
-export default function Template03({ formData = {}, paperSize = '58mm', fuels= [] }) {
+export default function Template02({ formData = {}, paperSize = '58mm', fuels= [] }) {
     const is80 = paperSize === '80mm';
 
     // 1. Pisahkan Tanggal & Jam
@@ -44,37 +44,45 @@ export default function Template03({ formData = {}, paperSize = '58mm', fuels= [
     const formatNum = (num) => Math.round(num).toLocaleString('en-US');
 
     return (
-        <div
-            className={`bg-white font-mono text-black leading-tight select-none mx-auto ${
-                is80 ? 'w-90 p-6 text-[13px] space-y-1.5' : 'w-70 p-4 text-[10.5px] space-y-1'
-            }`}
-        >
-            {/* Header & Logo Pertamina */}
-            <div className="flex flex-col items-center justify-center text-center">
-                <img
-                    src="/logo.png"
-                    alt="Logo Pertamina"
-                    className="mx-auto block object-contain grayscale contrast-200 mb-1"
-                    style={{ width: '120px', height: 'auto', maxHeight: '40px' }}
-                />
-                <div className="font-bold text-[11px] tracking-widest">
-                    {formData.spbuNo}
+        <div className="space-y-0.5">
+            {/* Header */}
+            <div className="text-center space-y-0.5">
+                <div className="flex flex-col items-center justify-center text-center">
+                    <img
+                        src="/logo.png"
+                        alt="Logo Pertamina"
+                        className="mx-auto block object-contain grayscale contrast-200 mb-1"
+                        style={{ width: '120px', height: 'auto', maxHeight: '40px' }}
+                    />
+                    <div className="font-bold text-[11px] tracking-widest">
+                        {formData.spbuNo}
+                    </div>
+                    <div className="font-bold uppercase text-[11px] leading-tight mt-0.5">
+                        {formData.spbuName || `SPBU ${formData.spbuCity}`}
+                    </div>
+                    <div className="uppercase text-[9.5px] leading-tight mt-0.5">
+                        {formData.spbuAddress}
+                    </div>
                 </div>
-                <div className="font-bold uppercase text-[11px] leading-tight mt-0.5">
-                    {formData.spbuName || `SPBU ${formData.spbuCity}`}
-                </div>
-                <div className="uppercase text-[9.5px] leading-tight mt-0.5">
-                    {formData.spbuAddress}
-                </div>
+
             </div>
 
-            {/* Shift & No. Trans */}
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
+
             <div className="flex justify-between text-[10px] pt-2">
-                <span>Shift: {formData.shift || '1'}</span>
+                <span className="w-28 shrink-0">Shift</span>
+                <span>:</span>
+                <span>{formData.shift}</span>
             </div>
-            <div className="text-[10px]">No. Trans: {formData.trxId || '682477'}</div>
-            <div className="text-[10px] pb-1">
-                Waktu: {datePart} {timePart}
+            <div className="flex justify-between text-[10px]">
+                <span className="w-28 shrink-0">No. Trans</span>
+                <span>:</span>
+                <span>{formData.trxId}</span>
+            </div>
+            <div className="flex justify-between text-[10px] pb-1">
+                <span className="w-28 shrink-0">Waktu</span>
+                <span>:</span>
+                <span>{datePart}<br/>{timePart}</span>
             </div>
 
             <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />

@@ -14,11 +14,8 @@ const getAutoDateTime = () => {
 };
 
 const getAutoTrxId = () => {
-    const now = new Date();
-    const pad = (num) => num.toString().padStart(2, '0');
-    const yyyymmdd = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    return `TRX-${yyyymmdd}-${randomNum}`;
+    const randomNum = Math.floor(6200000 + Math.random() * 19000);
+    return `${randomNum}`;
 };
 
 export default function ReceiptGenerator() {
