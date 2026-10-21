@@ -1,12 +1,9 @@
 import React from 'react';
+import ReceiptSeparator from "../ReceiptSeparator.jsx";
 
 export default function Template06({ formData, paperSize }) {
     const is80 = paperSize === '80mm';
-
-    // Format angka Rupiah
     const formatRupiah = (num) => `Rp${Number(num || 0).toLocaleString('id-ID')}`;
-
-    // Pembersih label BBM (contoh: "PERTALITE (RON 90)" -> "Pertalite")
     const formatBbmName = (name = '') => {
         return name.split('(')[0].trim();
     };
@@ -70,10 +67,7 @@ export default function Template06({ formData, paperSize }) {
                 </tbody>
             </table>
 
-            {/* Pembatas Garis */}
-            <div className="text-center overflow-hidden whitespace-nowrap tracking-tighter text-[9px] my-1">
-                ========================================
-            </div>
+            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
             {/* 3. Operator */}
             <table className="w-full border-collapse">
@@ -89,9 +83,7 @@ export default function Template06({ formData, paperSize }) {
             {/* 4. Footer Pesan Dinamis (Jika Ada) */}
             {formData.thanksText && (
                 <>
-                    <div className="text-center overflow-hidden whitespace-nowrap tracking-tighter text-[9px] my-1">
-                        ----------------------------------------
-                    </div>
+                    <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
                     <div className="text-center text-[9px] whitespace-pre-line pt-0.5 uppercase font-medium">
                         {formData.thanksText}
                     </div>

@@ -1,13 +1,11 @@
 import React from 'react';
 
 export default function ReceiptSeparator({ style = 'dashed', paperSize = '58mm' }) {
-    // 1. Tentukan jumlah karakter dasar (count) secara dinamis berdasarkan ukuran kertas
     let baseCount = paperSize === '80mm' ? 42 : 32;
 
     let symbol = '-';
-    let customClasses = 'my-1.5'; // Margin default
+    let customClasses = 'my-1.5';
 
-    // 2. Sesuaikan simbol dan panjang karakter agar pas di lebar thermal
     switch (style) {
         case 'equals':
             symbol = '=';
@@ -15,14 +13,14 @@ export default function ReceiptSeparator({ style = 'dashed', paperSize = '58mm' 
             break;
         case 'stars':
             symbol = '* ';
-            baseCount = paperSize === '80mm' ? 21 : 16; // Bintang berpasangan dengan spasi
+            baseCount = paperSize === '80mm' ? 21 : 12; // Bintang berpasangan dengan spasi
             break;
         case 'tilde':
             symbol = '~';
             break;
         case 'solid':
             symbol = '—';
-            baseCount = paperSize === '80mm' ? 36 : 28; // Karakter em-dash lebih panjang
+            baseCount = paperSize === '80mm' ? 36 : 18;
             break;
         case 'dots':
             symbol = '. ';
@@ -31,6 +29,7 @@ export default function ReceiptSeparator({ style = 'dashed', paperSize = '58mm' 
         case 'dashed':
         default:
             symbol = '-';
+            baseCount = paperSize === '80mm' ? 36 : 25;
             break;
     }
 

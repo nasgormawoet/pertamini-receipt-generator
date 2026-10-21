@@ -206,7 +206,7 @@ export default function ReceiptGenerator() {
                     <div>
                         <label className="text-xs font-medium text-slate-600 mb-2 block no-print">Model Desain Nota</label>
                         <div className="grid grid-cols-4 gap-2">
-                            {['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'].map((template) => (
+                            {['T1', 'T2', 'T3', 'T4'].map((template) => (
                                 <button
                                     key={template}
                                     type="button"
