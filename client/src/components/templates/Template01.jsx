@@ -10,7 +10,7 @@ export default function Template01({ formData, paperSize, fuels= [] }) {
     const change = Math.max(0, (Number(formData.cashGiven) || 0) - (Number(formData.total) || 0));
 
     return (
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 font-thermal text-black leading-tight">
             {/* Header */}
             <div className="text-center space-y-0.5">
                 <img

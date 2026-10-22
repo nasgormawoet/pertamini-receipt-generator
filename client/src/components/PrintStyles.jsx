@@ -8,13 +8,11 @@ export default function PrintStyles({ paperSize }) {
     return (
         <style>{`
       @media print {
-        /* 1. Hilangkan margin bawaan browser/kertas */
         @page {
           size: ${widthVal} auto;
           margin: 0mm !important;
         }
 
-        /* 2. Reset flow dokumen agar tidak membuat halaman kosong */
         html, body {
           width: ${widthVal} !important;
           min-width: ${widthVal} !important;
@@ -27,7 +25,6 @@ export default function PrintStyles({ paperSize }) {
           overflow: visible !important;
         }
 
-        /* 3. Hapus seluruh elemen UI selain receipt dari layout (bukan visibility hidden) */
         .no-print,
         header,
         form,
@@ -37,7 +34,6 @@ export default function PrintStyles({ paperSize }) {
           display: none !important;
         }
 
-        /* 4. Reset container utama React */
         .min-h-screen,
         .max-w-6xl,
         .grid {
@@ -48,9 +44,13 @@ export default function PrintStyles({ paperSize }) {
           min-height: auto !important;
         }
 
-        /* 5. Target area struk: 1 lembar utuh tanpa terpotong */
         #receipt-area {
           display: block !important;
+          font-family: 'Share Tech Mono', 'Courier Prime', 'Courier New', monospace !important;
+          color: #000000 !important;
+          text-rendering: optimizeLegibility;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
           position: static !important;
           width: ${widthVal} !important;
           max-width: ${widthVal} !important;
@@ -62,8 +62,10 @@ export default function PrintStyles({ paperSize }) {
           break-inside: avoid !important;
           page-break-after: avoid !important;
         }
-
-        /* 6. Optimasi kontras tinta & gambar thermal */
+        #receipt-area * {
+          color: #000000 !important;
+        }
+        
         img {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;

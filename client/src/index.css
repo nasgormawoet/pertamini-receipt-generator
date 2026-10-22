@@ -1,1 +1,8 @@
 @import "tailwindcss";
+@layer utilities {
+    .font-thermal {
+        font-family: 'Share Tech Mono', 'Courier Prime', 'Courier New', monospace;
+        letter-spacing: -0.02em;
+        -webkit-font-smoothing: antialiased;
+    }
+}

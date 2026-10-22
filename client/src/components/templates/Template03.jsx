@@ -5,7 +5,6 @@ import ReceiptSeparator from "../ReceiptSeparator.jsx";
 export default function Template03({ formData = {}, paperSize = '58mm' }) {
     const is80 = paperSize === '80mm';
 
-    // 1. Pisahkan Tanggal & Jam
     let datePart = '01/10/2026';
     let timePart = '08:15:31';
     if (formData.dateTime) {
@@ -14,7 +13,6 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
         if (parts[1]) timePart = parts[1];
     }
 
-    // 2. Cari data BBM dari fuel.js berdasarkan pilihan di form
     const selectedFuel = BBM_PRESETS.find((item) => item.name === formData.fuelType) || {
         name: formData.fuelType || 'PERTALITE',
         originalPrice: 15892,
@@ -22,17 +20,14 @@ export default function Template03({ formData = {}, paperSize = '58mm' }) {
         price: 10000,
     };
 
-    // Bersihkan keterangan "(RON 90)" dsb agar tampil "PERTALITE" seperti di struk asli
     const cleanBBMName = (selectedFuel.name || 'PERTALITE')
         .replace(/\s*\(.*?\)/g, '')
         .toUpperCase()
         .trim();
 
-    // 3. Kalkulasi Harga & Subsidi dari variabel fuel.js
     const subsidiPerLiter = Number(selectedFuel.subsidi) || 0;
     const isSubsidized = subsidiPerLiter > 0;
 
-    // Gunakan harga dari formData (jika diedit manual) atau dari preset fuel.js
     const jualPerLiter = Number(formData.pricePerLiter) || Number(selectedFuel.price) || 10000;
     const nonSubsidiPerLiter = jualPerLiter + subsidiPerLiter;
 

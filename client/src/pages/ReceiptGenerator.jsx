@@ -42,11 +42,11 @@ export default function ReceiptGenerator() {
         platNo: '',
         fuelType: '',
         pricePerLiter: 0,
-        volume: 15.44,
+        volume: '8',
         total: 0,
         paymentMethod: 'CASH',
-        cashGiven: 200000,
-        thanksText: 'TERIMA KASIH & SELAMAT JALAN\nPASTIKAN DISPLAY POMPA DI ANGKA NOL',
+        cashGiven: 100000,
+        thanksText: '',
         separatorStyle: 'dashed'
     });
 
@@ -206,7 +206,7 @@ export default function ReceiptGenerator() {
                     <div>
                         <label className="text-xs font-medium text-slate-600 mb-2 block no-print">Model Desain Nota</label>
                         <div className="grid grid-cols-4 gap-2">
-                            {['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'].map((template) => (
+                            {['T1', 'T2', 'T3', 'T4'].map((template) => (
                                 <button
                                     key={template}
                                     type="button"
