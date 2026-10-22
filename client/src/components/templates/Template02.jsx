@@ -20,22 +20,27 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
         price: 10000,
     };
 
+    // Bersihkan keterangan "(RON 90)" dsb agar tampil "PERTALITE" seperti di struk asli
     const cleanBBMName = (selectedFuel.name || 'PERTALITE')
         .replace(/\s*\(.*?\)/g, '')
         .toUpperCase()
         .trim();
 
+    // 3. Kalkulasi Harga & Subsidi dari variabel fuel.js
     const subsidiPerLiter = Number(selectedFuel.subsidi) || 0;
     const isSubsidized = subsidiPerLiter > 0;
 
+    // Gunakan harga dari formData (jika diedit manual) atau dari preset fuel.js
     const jualPerLiter = Number(formData.pricePerLiter) || Number(selectedFuel.price) || 10000;
     const nonSubsidiPerLiter = jualPerLiter + subsidiPerLiter;
 
+    // 4. Kalkulasi Total Penjualan (Rp)
     const displayVolume = Number(formData.volume) || 0;
     const totalKonsumen = Number(formData.total) || Math.round(displayVolume * jualPerLiter);
     const totalSubsidi = Math.round(displayVolume * subsidiPerLiter);
     const totalTanpaSubsidi = totalKonsumen + totalSubsidi;
 
+    // Format angka ribuan (menggunakan pemisah koma/titik sesuai struk)
     const formatNum = (num) => Math.round(num).toLocaleString('en-US');
 
     return (
@@ -64,22 +69,20 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
 
             <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
 
-            <div className="space-y-0.5">
-                <div className="flex">
-                    <span className="w-28 shrink-0">Shift</span>
-                    <span className="mr-1.5">:</span>
-                    <span>{formData.shift}</span>
-                </div>
-                <div className="flex">
-                    <span className="w-28 shrink-0">No. Trans</span>
-                    <span className="mr-1.5">:</span>
-                    <span className="uppercase">{formData.trxId}</span>
-                </div>
-                <div className="flex">
-                    <span className="w-28 shrink-0">Waktu</span>
-                    <span className="mr-1.5">:</span>
-                    <span className="uppercase">{datePart}<br/>{timePart}</span>
-                </div>
+            <div className="flex justify-between text-[10px] pt-2">
+                <span className="w-28 shrink-0">Shift</span>
+                <span>:</span>
+                <span>{formData.shift}</span>
+            </div>
+            <div className="flex justify-between text-[10px]">
+                <span className="w-28 shrink-0">No. Trans</span>
+                <span>:</span>
+                <span>{formData.trxId}</span>
+            </div>
+            <div className="flex justify-between text-[10px] pb-1">
+                <span className="w-28 shrink-0">Waktu</span>
+                <span>:</span>
+                <span>{datePart}<br/>{timePart}</span>
             </div>
 
             <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
@@ -89,7 +92,7 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
                 <div className="flex">
                     <span className="w-28 shrink-0">Pompa</span>
                     <span className="mr-1.5">:</span>
-                    <span>{formData.pompaNo}</span>
+                    <span>{formData.pompaNo || '9'}</span>
                 </div>
                 <div className="flex">
                     <span className="w-28 shrink-0">Operator</span>
@@ -108,7 +111,7 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
                 </div>
             </div>
 
-            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
 
             {/* Blok Informasi Harga BBM (Rp/Liter) */}
             <div className="space-y-0.5">
@@ -140,7 +143,7 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
                 )}
             </div>
 
-            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
 
             {/* Blok Total Penjualan (Rp) */}
             <div className="space-y-0.5">
@@ -172,7 +175,7 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
                 )}
             </div>
 
-            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
+            <div className="border-t border-double border-black/60 my-1.5"></div>
 
             {/* Metode Pembayaran */}
             <div className="py-0.5">
@@ -188,7 +191,7 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
                 )}
             </div>
 
-            <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
+            <div className="border-t border-dashed border-black/60 my-1.5"></div>
 
             {/* Nomor Plat */}
             {formData.platNo && (
@@ -198,7 +201,7 @@ export default function Template02({ formData = {}, paperSize = '58mm', fuels= [
                         <span className="mr-1.5">:</span>
                         <span className="uppercase">{formData.platNo}</span>
                     </div>
-                    <ReceiptSeparator style={formData.separatorStyle} paperSize={paperSize} />
+                    <div className="border-t border-dashed border-black/60 my-1.5"></div>
                 </>
             )}
 
