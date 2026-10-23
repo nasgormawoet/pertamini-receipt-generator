@@ -15,7 +15,7 @@ export default function ReceiptSeparator({ style = 'dashed', paperSize = '58mm' 
             break;
         case 'stars':
             symbol = '* ';
-            baseCount = paperSize === '80mm' ? 21 : 16; // Bintang berpasangan dengan spasi
+            baseCount = paperSize === '80mm' ? 21 : 12; // Bintang berpasangan dengan spasi
             break;
         case 'tilde':
             symbol = '~';
@@ -31,10 +31,10 @@ export default function ReceiptSeparator({ style = 'dashed', paperSize = '58mm' 
         case 'dashed':
         default:
             symbol = '-';
+            baseCount = paperSize === '80mm' ? 40 : 26;
             break;
     }
 
-    // Generate string berulang secara dinamis
     const renderText = symbol.repeat(baseCount);
 
     return (

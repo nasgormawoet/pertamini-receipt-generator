@@ -220,9 +220,8 @@ export default function ReceiptForm({
                         />
                     </div>
                 </div>
-                <div className="py-6">
+                <div className="py-4">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Pengaturan Tampilan Struk</h3>
-
                     <div>
                         <label className="text-xs font-medium text-slate-600">Gaya Pemisah (Separator)</label>
                         <select
@@ -239,8 +238,6 @@ export default function ReceiptForm({
                     </div>
                 </div>
             </div>
-
-            <hr className="border-slate-100" />
 
             {/* Pilihan Template Footer Mandiri */}
             <div>
